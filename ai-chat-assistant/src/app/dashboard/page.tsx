@@ -1,10 +1,9 @@
 // app/dashboard/page.tsx
 import { auth, signOut } from "@/auth"
 import { redirect } from "next/navigation"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Card, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import ChatInterface from "@/components/features/chat-interface"
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -43,26 +42,8 @@ export default async function DashboardPage() {
           </form>
         </CardHeader>
 
-        {/* Chat history */}
-        <CardContent className="p-4">
-          <ScrollArea className="h-[400px] w-full pr-4">
-            <div className="flex flex-col gap-3">
-              {/* Example chat messages */}
-              <div className="self-start bg-gray-200 text-black px-4 py-2 rounded-lg max-w-[70%]">
-                Hey! How can I help you today?
-              </div>
-              <div className="self-end bg-blue-600 text-white px-4 py-2 rounded-lg max-w-[70%]">
-                I want to know about my account.
-              </div>
-            </div>
-          </ScrollArea>
-        </CardContent>
-
-        {/* Chat input */}
-        <div className="flex items-center gap-2 border-t p-3">
-          <Input placeholder="Type your message..." className="flex-1" />
-          <Button>Send</Button>
-        </div>
+        {/* Chat Interface Component */}
+        <ChatInterface />
       </Card>
     </main>
   )
