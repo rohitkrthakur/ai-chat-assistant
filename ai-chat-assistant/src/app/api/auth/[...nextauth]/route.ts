@@ -2,10 +2,7 @@ import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import GitHub from "next-auth/providers/github"
 
-
-
-
-export const { handlers, auth, signIn, signOut } = NextAuth({
+const authOptions = {
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -16,12 +13,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientSecret: process.env.GITHUB_SECRET!,
     }),
   ],
-  secret: process.env.NEXTAUTH_SECRET,
-  callbacks:{
-    async redirect({baseUrl}){
-        return `${baseUrl}/dashboard`
-    }
-  }
-})
+  callbacks: {
+    async session({ session, token }: any) {
+      return session
+    },
+    async jwt({ token, user }: any) {
+      return token
+    },
+    async redirect({ url, baseUrl }: any) {
+      // always send user to dashboard after login
+      return `${baseUrl}/dashboard`
+    },
+  },
+}
 
-export const { GET, POST } = handlers
+const handler = NextAuth(authOptions)
+
+export { handler as GET, handler as POST }

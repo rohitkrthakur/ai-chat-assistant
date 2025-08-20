@@ -1,18 +1,30 @@
-// app/dashboard/page.tsx
-import { auth, signOut } from "@/auth"
-import { redirect } from "next/navigation"
+"use client"
+export const dynamic = "force-dynamic"
+
+import { signOut, useSession } from "next-auth/react"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import ChatInterface from "@/components/features/chat-interface"
+import Image from "next/image"
 
-export default async function DashboardPage() {
-  const session = await auth()
+export default function DashboardPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
 
-  if (!session) {
-    redirect("/")
+  // redirect to home if not logged in
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/")
+    }
+  }, [status, router])
+
+  if (status === "loading") {
+    return <p className="text-center mt-10">Loading...</p>
   }
 
-  const { name, image } = session.user ?? {}
+  const { name, image } = session?.user ?? {}
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
@@ -20,29 +32,28 @@ export default async function DashboardPage() {
         <CardHeader className="flex items-center justify-between border-b pb-2">
           <div className="flex items-center gap-3">
             {image && (
-              <img
+              <Image
                 src={image}
                 alt="Profile"
+                width={40}
+                height={40}
                 className="w-10 h-10 rounded-full"
+                unoptimized
               />
             )}
             <h2 className="text-lg font-semibold">Hello, {name} 👋</h2>
           </div>
 
           {/* Logout button */}
-          <form
-            action={async () => {
-              "use server"
-              await signOut()
-            }}
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => signOut({ callbackUrl: "/" })}
           >
-            <Button variant="destructive" size="sm" type="submit">
-              Logout
-            </Button>
-          </form>
+            Logout
+          </Button>
         </CardHeader>
 
-        {/* Chat Interface Component */}
         <ChatInterface />
       </Card>
     </main>
