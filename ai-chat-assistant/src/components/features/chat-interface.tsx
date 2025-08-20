@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, FormEvent } from "react"
+import { useState, useEffect, FormEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -16,8 +16,12 @@ export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [clientLoaded, setClientLoaded] = useState(false) // ensures client-only rendering
 
-  // Helper to append a new message
+  useEffect(() => {
+    setClientLoaded(true)
+  }, [])
+
   const addMessage = (message: Message) => {
     setMessages((prev) => [...prev, message])
   }
@@ -27,7 +31,7 @@ export default function ChatInterface() {
     if (!input.trim() || isLoading) return
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(), // SSR-safe unique id
       role: "user",
       content: input,
     }
@@ -37,7 +41,7 @@ export default function ChatInterface() {
     setIsLoading(true)
 
     const assistantMessage: Message = {
-      id: (Date.now() + 1).toString(),
+      id: crypto.randomUUID(),
       role: "assistant",
       content: "",
     }
@@ -79,16 +83,17 @@ export default function ChatInterface() {
       console.error(err)
       setMessages((prev) => [
         ...prev,
-        { id: Date.now().toString(), role: "assistant", content: "Oops! Something went wrong." },
+        { id: crypto.randomUUID(), role: "assistant", content: "Oops! Something went wrong." },
       ])
     } finally {
       setIsLoading(false)
     }
   }
 
+  if (!clientLoaded) return null // avoid SSR mismatch
+
   return (
     <>
-      {/* Chat history */}
       <CardContent className="p-4">
         <ScrollArea className="h-[400px] w-full pr-4">
           <div className="flex flex-col gap-3">
@@ -102,7 +107,9 @@ export default function ChatInterface() {
               <div
                 key={message.id}
                 className={`px-4 py-2 rounded-lg max-w-[70%] ${
-                  message.role === "user" ? "self-end bg-blue-600 text-white" : "self-start bg-gray-200 text-black"
+                  message.role === "user"
+                    ? "self-end bg-blue-600 text-white"
+                    : "self-start bg-gray-200 text-black"
                 }`}
               >
                 {message.content}
@@ -118,7 +125,6 @@ export default function ChatInterface() {
         </ScrollArea>
       </CardContent>
 
-      {/* Chat input */}
       <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t p-3">
         <Input
           value={input}

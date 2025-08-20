@@ -1,7 +1,7 @@
-export { GET, POST } from "@/auth";
+// export { GET, POST } from "@/auth";
 
 
 
-export const config = {
-  matcher: ["/dashboard/:path*"],
-}
+// export const config = {
+//   matcher: ["/dashboard/:path*"],
+// }
